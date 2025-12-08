@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FPS Three.js - Cécifoot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dialog.css">
+    <link rel="stylesheet" href="css/quiz.css">
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+    <div id="blocker">
+        <div id="instructions">
+            <h1>Cliquez pour jouer</h1>
+            <p>Flèches directionnelles pour se déplacer<br>ZQSD pour les déplacements latéraux<br>Espace/Entrée pour interagir</p>
+        </div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="interactionHint" class="interaction-hint">Appuie sur Entrée pour parler</div>
+
+    <!-- Settings Button & Menu -->
+    <button id="settingsBtn" class="settings-btn" onclick="toggleSettings()">⚙️</button>
+    <div id="settingsMenu" class="settings-menu">
+        <div class="settings-header">
+            <span>Paramètres</span>
+            <button class="settings-close" onclick="toggleSettings()">✕</button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-item">
+                <label for="musicToggle">Musique</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="musicToggle" checked onchange="toggleMusicSetting()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <label for="apiKeyInput">Clé API OpenAI</label>
+                <input type="password" id="apiKeyInput" class="settings-input" placeholder="sk-..." onchange="saveApiKey()">
+                <small class="settings-hint">Pour le chat IA (stockée localement)</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialog UI -->
+    <div id="dialogOverlay" class="dialog-overlay">
+        <div class="dialog-box">
+            <button class="close-btn" onclick="closeDialog()">✕</button>
+            
+            <div class="dialog-header">
+                <div class="dialog-avatar">⚽</div>
+                <div class="dialog-title">Expert Cécifoot</div>
+            </div>
+
+            <!-- Main Menu -->
+            <div id="mainMenu" class="menu-buttons">
+                <button class="menu-btn quiz" onclick="startQuiz()">
+                    <div class="menu-btn-icon">🏆</div>
+                    <div class="menu-btn-text">
+                        Quiz
+                        <small>10 questions</small>
+                    </div>
+                </button>
+                <button class="menu-btn chat" onclick="startChat()">
+                    <div class="menu-btn-icon">💬</div>
+                    <div class="menu-btn-text">
+                        Causer Cécifoot
+                        <small>Pose tes questions</small>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quizContainer" class="quiz-container">
+                <button class="menu-btn back-btn" onclick="backToMenu()">← Retour</button>
+                <div id="quizHeader" class="quiz-header">
+                    <div id="quizProgress" class="quiz-progress"></div>
+                    <div id="quizLiveScore" class="quiz-live-score">0/0</div>
+                </div>
+                <div id="quizQuestion" class="quiz-question"></div>
+                <div id="quizAnswers" class="quiz-answers"></div>
+                <div id="quizScore" class="quiz-score" style="display:none;">
+                    <div class="quiz-score-number" id="scoreNumber">0/10</div>
+                    <div class="quiz-score-text" id="scoreText"></div>
+                    <button class="menu-btn quiz quiz-restart" onclick="startQuiz()">
+                        <div class="menu-btn-icon">🔄</div>
+                        <div class="menu-btn-text">Rejouer</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div id="chatContainer" class="chat-container">
+                <button class="menu-btn back-btn" onclick="backToMenu()">← Retour</button>
+                <div id="voiceChatUI" class="voice-chat-ui">
+                    <button id="voiceToVoiceBtn" class="voice-talk-btn" onclick="toggleVoiceToVoice()">
+                        <div class="voice-btn-waves">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="voice-btn-icon">🎙️</span>
+                        <span class="voice-btn-text">Appuie pour parler</span>
+                    </button>
+                    <div id="voiceStatus" class="voice-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
