@@ -116,11 +116,21 @@ function initDialogKeyboard() {
                     break;
             }
         }
-        // Chat container - Escape to go back
+        // Chat container - Space/Enter to toggle voice, Escape to go back
         else if (chatContainer.classList.contains('active')) {
-            if (event.code === 'Escape') {
-                event.preventDefault();
-                backToMenu();
+            switch (event.code) {
+                case 'Space':
+                case 'Enter':
+                    event.preventDefault();
+                    // Toggle Voice-to-Voice
+                    if (typeof toggleVoiceToVoice === 'function') {
+                        toggleVoiceToVoice();
+                    }
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    backToMenu();
+                    break;
             }
         }
         // Quiz container - Escape to go back (handled in quiz.js for answers)
