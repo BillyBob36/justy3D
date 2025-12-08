@@ -13,12 +13,28 @@
 <body>
     <div id="blocker">
         <div id="instructions">
-            <h1>Cliquez pour jouer</h1>
-            <p>Flèches directionnelles pour se déplacer<br>ZQSD pour les déplacements latéraux<br>Espace/Entrée pour interagir</p>
+            <h1>Touche pour jouer</h1>
+            <p class="desktop-instructions">Flèches directionnelles pour se déplacer<br>ZQSD pour les déplacements latéraux<br>Espace/Entrée pour interagir</p>
+            <p class="mobile-instructions">Joystick pour se déplacer<br>Bouton 💬 pour interagir</p>
         </div>
     </div>
     <div id="crosshair"></div>
-    <div id="interactionHint" class="interaction-hint">Appuie sur Entrée pour parler</div>
+    <div id="interactionHint" class="interaction-hint">
+        <span class="desktop-hint">Appuie sur Entrée pour parler</span>
+        <span class="mobile-hint">Appuie sur 💬 pour parler</span>
+    </div>
+    
+    <!-- Mobile Controls -->
+    <div id="mobileControls" class="mobile-controls">
+        <div id="joystickZone" class="joystick-zone">
+            <div id="joystickBase" class="joystick-base">
+                <div id="joystickKnob" class="joystick-knob"></div>
+            </div>
+        </div>
+        <button id="mobileInteractBtn" class="mobile-interact-btn">
+            <span>💬</span>
+        </button>
+    </div>
 
     <!-- Settings Button & Menu -->
     <button id="settingsBtn" class="settings-btn" onclick="toggleSettings()">⚙️</button>

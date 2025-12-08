@@ -334,6 +334,113 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
+// ===== MOBILE CONTROLS =====
+let isMobile = false;
+let joystickActive = false;
+let joystickData = { x: 0, y: 0 };
+
+function initMobileControls() {
+    // Detect touch device
+    isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    const mobileControls = document.getElementById('mobileControls');
+    const joystickZone = document.getElementById('joystickZone');
+    const joystickBase = document.getElementById('joystickBase');
+    const joystickKnob = document.getElementById('joystickKnob');
+    const mobileInteractBtn = document.getElementById('mobileInteractBtn');
+    
+    if (!joystickZone || !mobileInteractBtn) return;
+    
+    // Joystick touch handling
+    let joystickTouchId = null;
+    const maxDistance = 35; // Max knob movement from center
+    
+    joystickZone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (joystickTouchId !== null) return;
+        
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
+        joystickActive = true;
+        updateJoystick(touch);
+    }, { passive: false });
+    
+    joystickZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === joystickTouchId) {
+                updateJoystick(touch);
+                break;
+            }
+        }
+    }, { passive: false });
+    
+    joystickZone.addEventListener('touchend', (e) => {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === joystickTouchId) {
+                joystickTouchId = null;
+                joystickActive = false;
+                joystickData = { x: 0, y: 0 };
+                joystickKnob.style.transform = 'translate(-50%, -50%)';
+                break;
+            }
+        }
+    });
+    
+    joystickZone.addEventListener('touchcancel', () => {
+        joystickTouchId = null;
+        joystickActive = false;
+        joystickData = { x: 0, y: 0 };
+        joystickKnob.style.transform = 'translate(-50%, -50%)';
+    });
+    
+    function updateJoystick(touch) {
+        const rect = joystickBase.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        let deltaX = touch.clientX - centerX;
+        let deltaY = touch.clientY - centerY;
+        
+        // Limit to max distance
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (distance > maxDistance) {
+            deltaX = (deltaX / distance) * maxDistance;
+            deltaY = (deltaY / distance) * maxDistance;
+        }
+        
+        // Update knob position
+        joystickKnob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+        
+        // Normalize to -1 to 1
+        joystickData.x = deltaX / maxDistance;
+        joystickData.y = -deltaY / maxDistance; // Invert Y (up is positive)
+    }
+    
+    // Mobile interact button
+    mobileInteractBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (gameStarted && !isInDialogMode()) {
+            simulateClick();
+        }
+    }, { passive: false });
+}
+
+// Update mobile interact button state
+function updateMobileInteractButton(canInteract) {
+    const btn = document.getElementById('mobileInteractBtn');
+    if (btn) {
+        if (canInteract) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
+}
+
+// Initialize mobile controls when DOM is ready
+document.addEventListener('DOMContentLoaded', initMobileControls);
+
 // Character variables
 let character = null;
 let mixer = null;
@@ -583,13 +690,13 @@ function animate() {
         // Save position before moving (for collision)
         const prevPosition = camera.position.clone();
         
-        // Rotation (ArrowLeft / ArrowRight)
-        if (keys.rotateLeft) {
-            playerRotation += ROTATION_SPEED * delta;
-        }
-        if (keys.rotateRight) {
-            playerRotation -= ROTATION_SPEED * delta;
-        }
+        // Rotation (ArrowLeft / ArrowRight or joystick X axis)
+        let rotationInput = 0;
+        if (keys.rotateLeft) rotationInput += 1;
+        if (keys.rotateRight) rotationInput -= 1;
+        if (joystickActive) rotationInput -= joystickData.x * 0.8; // Joystick X for rotation
+        
+        playerRotation += rotationInput * ROTATION_SPEED * delta;
         
         // Apply rotation to camera
         camera.rotation.set(0, playerRotation, 0);
@@ -609,25 +716,30 @@ function animate() {
         // Calculate movement
         const moveSpeed = CONFIG.PLAYER_SPEED * MOVE_SPEED * delta;
         
-        // Forward/Backward (backward is 50% slower)
-        if (keys.forward) {
-            camera.position.addScaledVector(forward, moveSpeed);
-        }
-        if (keys.backward) {
-            camera.position.addScaledVector(forward, -moveSpeed * 0.5);
+        // Forward/Backward input (keyboard or joystick Y axis)
+        let forwardInput = 0;
+        if (keys.forward) forwardInput += 1;
+        if (keys.backward) forwardInput -= 0.5; // Backward is slower
+        if (joystickActive && Math.abs(joystickData.y) > 0.1) {
+            forwardInput += joystickData.y; // Joystick Y for forward/backward
         }
         
-        // Strafe Left/Right
-        if (keys.left) {
-            camera.position.addScaledVector(right, -moveSpeed);
+        // Strafe input (keyboard only, joystick X is for rotation)
+        let strafeInput = 0;
+        if (keys.left) strafeInput -= 1;
+        if (keys.right) strafeInput += 1;
+        
+        // Apply movement
+        if (forwardInput !== 0) {
+            camera.position.addScaledVector(forward, forwardInput * moveSpeed);
         }
-        if (keys.right) {
-            camera.position.addScaledVector(right, moveSpeed);
+        if (strafeInput !== 0) {
+            camera.position.addScaledVector(right, strafeInput * moveSpeed);
         }
         
         // Walking detection
-        const isWalkingForward = keys.forward;
-        const isWalkingBackward = keys.backward;
+        const isWalkingForward = keys.forward || (joystickActive && joystickData.y > 0.1);
+        const isWalkingBackward = keys.backward || (joystickActive && joystickData.y < -0.1);
         
         // Camera bob and footsteps
         if (isWalkingForward) {
@@ -705,11 +817,14 @@ function animate() {
         
         // Show/hide interaction hint based on distance
         const interactionHint = document.getElementById('interactionHint');
-        if (distance < CONFIG.INTERACTION_DISTANCE) {
+        const canInteract = distance < CONFIG.INTERACTION_DISTANCE;
+        if (canInteract) {
             interactionHint.classList.add('visible');
         } else {
             interactionHint.classList.remove('visible');
         }
+        // Update mobile interact button
+        updateMobileInteractButton(canInteract);
         
         if (distance < CONFIG.DETECTION_DISTANCE) {
             // Direction from character to player
