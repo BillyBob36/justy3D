@@ -285,45 +285,22 @@ async function startRealtimeSession() {
     // Step 1: Get ephemeral key from backend server (keeps API key secure)
     let ephemeralKey;
     
-    // Try backend first, fallback to user's API key if backend fails
+    // Get selected voice from settings
+    const selectedVoice = window.getSelectedVoice ? window.getSelectedVoice() : 'echo';
+    
+    // Get ephemeral key from backend server
     try {
-        const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/realtime-token`);
+        const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/realtime-token?voice=${selectedVoice}`);
         if (backendResponse.ok) {
             const data = await backendResponse.json();
             ephemeralKey = data.client_secret.value;
         } else {
-            throw new Error('Backend unavailable');
+            const errorData = await backendResponse.json();
+            throw new Error(errorData.error || 'Erreur serveur');
         }
-    } catch (backendError) {
-        console.warn('Backend unavailable, trying user API key...');
-        // Fallback: use user's API key from settings
-        const apiKey = window.getApiKey ? window.getApiKey() : '';
-        if (!apiKey) {
-            throw new Error('Serveur indisponible. Entrez une clé API dans ⚙️ Paramètres.');
-        }
-        
-        const sessionResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-realtime-preview-2024-12-17',
-                voice: 'echo',
-                instructions: CONFIG.VOICE_SYSTEM_PROMPT,
-                input_audio_transcription: { model: 'whisper-1' },
-                turn_detection: { type: 'server_vad' }
-            })
-        });
-        
-        if (!sessionResponse.ok) {
-            const error = await sessionResponse.json();
-            throw new Error(error.error?.message || 'Erreur lors de la création de session');
-        }
-        
-        const sessionData = await sessionResponse.json();
-        ephemeralKey = sessionData.client_secret.value;
+    } catch (error) {
+        console.error('Backend error:', error);
+        throw new Error('Serveur indisponible. Réessayez plus tard.');
     }
     
     // Step 2: Get microphone access

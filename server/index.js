@@ -25,12 +25,21 @@ Tes connaissances :
 
 Parle de manière naturelle, enthousiaste et concise. Tu es passionné par ce sport !`;
 
+// Voix disponibles
+const AVAILABLE_VOICES = ['echo', 'alloy', 'ash', 'ballad', 'coral', 'sage', 'shimmer', 'verse'];
+
 // Route pour obtenir une clé éphémère pour la Realtime API
 app.get('/realtime-token', async (req, res) => {
     const apiKey = process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
         return res.status(500).json({ error: 'API key not configured on server' });
+    }
+    
+    // Get voice from query param, default to 'echo'
+    let voice = req.query.voice || 'echo';
+    if (!AVAILABLE_VOICES.includes(voice)) {
+        voice = 'echo';
     }
     
     try {
@@ -43,7 +52,7 @@ app.get('/realtime-token', async (req, res) => {
             },
             body: JSON.stringify({
                 model: 'gpt-4o-realtime-preview-2024-12-17',
-                voice: 'echo',
+                voice: voice,
                 instructions: VOICE_SYSTEM_PROMPT,
                 input_audio_transcription: {
                     model: 'whisper-1'

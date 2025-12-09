@@ -103,31 +103,28 @@ window.resumeMusicAfterVoiceChat = function() {
     }
 };
 
-// Save API key to localStorage
-window.saveApiKey = function() {
-    const input = document.getElementById('apiKeyInput');
-    const key = input.value.trim();
-    if (key) {
-        localStorage.setItem('openai_api_key', key);
-    } else {
-        localStorage.removeItem('openai_api_key');
-    }
+// Default voice for AI
+const DEFAULT_VOICE = 'echo';
+
+// Get selected voice (used by chat.js)
+window.getSelectedVoice = function() {
+    return localStorage.getItem('ai_voice') || DEFAULT_VOICE;
 };
 
-// Default API key (users must enter their own key via settings)
-const DEFAULT_API_KEY = '';
-
-// Get API key (used by chat.js)
-window.getApiKey = function() {
-    return localStorage.getItem('openai_api_key') || DEFAULT_API_KEY;
+// Save voice setting
+window.saveVoiceSetting = function() {
+    const voiceSelect = document.getElementById('voiceSelect');
+    if (voiceSelect) {
+        localStorage.setItem('ai_voice', voiceSelect.value);
+    }
 };
 
 // Load settings on startup
 function loadSettings() {
     const musicToggle = document.getElementById('musicToggle');
-    const apiKeyInput = document.getElementById('apiKeyInput');
+    const voiceSelect = document.getElementById('voiceSelect');
     
-    if (!musicToggle || !apiKeyInput) {
+    if (!musicToggle || !voiceSelect) {
         setTimeout(loadSettings, 100);
         return;
     }
@@ -139,9 +136,9 @@ function loadSettings() {
         musicToggle.checked = musicEnabled;
     }
     
-    // Load API key (use saved or default)
-    const savedKey = localStorage.getItem('openai_api_key');
-    apiKeyInput.value = savedKey || DEFAULT_API_KEY;
+    // Load voice preference
+    const savedVoice = localStorage.getItem('ai_voice') || DEFAULT_VOICE;
+    voiceSelect.value = savedVoice;
 }
 
 // Initialize settings when DOM is ready

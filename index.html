@@ -49,9 +49,17 @@
                 </label>
             </div>
             <div class="settings-item">
-                <label for="apiKeyInput">Clé API OpenAI</label>
-                <input type="password" id="apiKeyInput" class="settings-input" placeholder="sk-..." onchange="saveApiKey()">
-                <small class="settings-hint">Pour le chat IA (stockée localement)</small>
+                <label for="voiceSelect">Voix de l'IA</label>
+                <select id="voiceSelect" class="settings-select" onchange="saveVoiceSetting()">
+                    <option value="echo">Echo (masculine)</option>
+                    <option value="alloy">Alloy (neutre)</option>
+                    <option value="ash">Ash (masculine)</option>
+                    <option value="ballad">Ballad (féminine)</option>
+                    <option value="coral">Coral (féminine)</option>
+                    <option value="sage">Sage (féminine)</option>
+                    <option value="shimmer">Shimmer (féminine)</option>
+                    <option value="verse">Verse (masculine)</option>
+                </select>
             </div>
         </div>
     </div>
