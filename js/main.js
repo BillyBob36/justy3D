@@ -811,9 +811,18 @@ function animate() {
         
         const distance = playerPos.distanceTo(charPos);
         
-        // Show/hide interaction hint based on distance
+        // Check if player is looking towards the character
+        const cameraForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        cameraForward.y = 0;
+        cameraForward.normalize();
+        
+        const dirToChar = new THREE.Vector3().subVectors(charPos, playerPos).normalize();
+        const lookDot = cameraForward.dot(dirToChar);
+        const isLookingAtChar = lookDot > 0.5; // ~60° cone of vision
+        
+        // Show/hide interaction hint based on distance AND looking direction
         const interactionHint = document.getElementById('interactionHint');
-        const canInteract = distance < CONFIG.INTERACTION_DISTANCE;
+        const canInteract = distance < CONFIG.INTERACTION_DISTANCE && isLookingAtChar;
         if (canInteract) {
             interactionHint.classList.add('visible');
         } else {
