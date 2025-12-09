@@ -226,7 +226,6 @@ scene.add(ground);
 let gameStarted = false;
 
 const blocker = document.getElementById('blocker');
-const crosshair = document.getElementById('crosshair');
 
 // Start game on click
 blocker.addEventListener('click', () => {
@@ -235,7 +234,6 @@ blocker.addEventListener('click', () => {
         startMusic();
         // Fondu vers la scène
         blocker.classList.add('fade-out');
-        crosshair.style.display = 'block';
         // Afficher le bouton paramètres
         document.getElementById('settingsBtn').classList.add('visible');
         setTimeout(() => {
@@ -663,25 +661,33 @@ window.playSadAnimation = playSadAnimation;
 window.playTalkLongAnimation = playTalkLongAnimation;
 window.stopTalkLongAnimation = stopTalkLongAnimation;
 
-// Raycaster for clicking
-const raycaster = new THREE.Raycaster();
-const center = new THREE.Vector2(0, 0);
-
-// Function to handle interaction (used by space, enter)
+// Function to handle interaction (used by space, enter, click)
+// Uses same logic as hint visibility (distance + looking direction)
 function handleInteraction() {
     if (!gameStarted || !character) return;
     
-    raycaster.setFromCamera(center, camera);
-    const intersects = raycaster.intersectObject(character, true);
+    const playerPos = camera.position.clone();
+    playerPos.y = 0;
+    const charPos = character.position.clone();
+    charPos.y = 0;
     
-    if (intersects.length > 0) {
-        const distance = intersects[0].distance;
-        if (distance < CONFIG.INTERACTION_DISTANCE) {
-            // Hide hint when opening dialog
-            document.getElementById('interactionHint').classList.remove('visible');
-            playOneShotAnimation(CONFIG.ANIMATIONS.TALK);
-            window.openDialog();
-        }
+    const distance = playerPos.distanceTo(charPos);
+    
+    // Check if looking towards character
+    const cameraForward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    cameraForward.y = 0;
+    cameraForward.normalize();
+    
+    const dirToChar = new THREE.Vector3().subVectors(charPos, playerPos).normalize();
+    const lookDot = cameraForward.dot(dirToChar);
+    const isLookingAtChar = lookDot > 0.5; // ~60° cone
+    
+    // Can interact if close enough AND looking at character
+    if (distance < CONFIG.INTERACTION_DISTANCE && isLookingAtChar) {
+        // Hide hint when opening dialog
+        document.getElementById('interactionHint').classList.remove('visible');
+        playOneShotAnimation(CONFIG.ANIMATIONS.TALK);
+        window.openDialog();
     }
 }
 

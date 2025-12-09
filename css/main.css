@@ -73,40 +73,6 @@ canvas {
     display: inline;
 }
 
-/* Crosshair */
-#crosshair {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    pointer-events: none;
-    z-index: 50;
-    display: none;
-}
-
-#crosshair::before,
-#crosshair::after {
-    content: '';
-    position: absolute;
-    background: rgba(255,255,255,0.8);
-}
-
-#crosshair::before {
-    width: 2px;
-    height: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#crosshair::after {
-    width: 20px;
-    height: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
 /* Interaction Hint */
 .interaction-hint {
     position: fixed;
@@ -423,9 +389,6 @@ input:checked + .toggle-slider:before {
 @media (pointer: coarse) {
     .mobile-controls {
         display: block;
-    }
-    #crosshair {
-        display: none !important;
     }
     .interaction-hint {
         bottom: 220px;
