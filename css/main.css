@@ -48,6 +48,36 @@ canvas {
     font-size: 18px;
 }
 
+/* Loading Bar */
+.loading-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin: 30px auto 0;
+    overflow: hidden;
+}
+
+.loading-progress {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #4488ff, #44ddff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.loading-bar.hidden {
+    display: none;
+}
+
+#blocker.ready {
+    cursor: pointer;
+}
+
+#blocker:not(.ready) {
+    cursor: default;
+}
+
 /* Show/hide instructions based on device */
 .mobile-instructions {
     display: none;

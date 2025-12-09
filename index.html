@@ -13,9 +13,12 @@
 <body>
     <div id="blocker">
         <div id="instructions">
-            <h1>Touche pour jouer</h1>
+            <h1 id="startTitle">Chargement...</h1>
             <p class="desktop-instructions">Flèches directionnelles pour se déplacer<br>ZQSD pour les déplacements latéraux<br>Espace/Entrée pour interagir</p>
             <p class="mobile-instructions">Joystick pour se déplacer<br>Approche-toi pour interagir</p>
+            <div id="loadingBar" class="loading-bar">
+                <div id="loadingProgress" class="loading-progress"></div>
+            </div>
         </div>
     </div>
     <div id="interactionHint" class="interaction-hint" onclick="window.mobileInteract && window.mobileInteract()">

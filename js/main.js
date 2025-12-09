@@ -224,12 +224,31 @@ scene.add(ground);
 
 // Game state
 let gameStarted = false;
+let assetsLoaded = 0;
+const TOTAL_ASSETS = 3; // character, goal, ball
 
 const blocker = document.getElementById('blocker');
+const loadingProgress = document.getElementById('loadingProgress');
+const loadingBar = document.getElementById('loadingBar');
+const startTitle = document.getElementById('startTitle');
 
-// Start game on click
+// Update loading progress
+function updateLoadingProgress() {
+    assetsLoaded++;
+    const percent = (assetsLoaded / TOTAL_ASSETS) * 100;
+    loadingProgress.style.width = percent + '%';
+    
+    if (assetsLoaded >= TOTAL_ASSETS) {
+        // All assets loaded - ready to start
+        blocker.classList.add('ready');
+        startTitle.textContent = 'Touche pour jouer';
+        loadingBar.classList.add('hidden');
+    }
+}
+
+// Start game on click (only if ready)
 blocker.addEventListener('click', () => {
-    if (!gameStarted) {
+    if (!gameStarted && blocker.classList.contains('ready')) {
         gameStarted = true;
         startMusic();
         // Fondu vers la scène
@@ -489,8 +508,10 @@ loader.load(CONFIG.CHARACTER_MODEL, (gltf) => {
     
     // Update dialog with character reference
     updateCharacterRef(character);
+    updateLoadingProgress();
 }, undefined, (error) => {
     console.error('Erreur chargement modèle:', error);
+    updateLoadingProgress(); // Count even on error
 });
 
 // Load goal (but.glb) at center of scene
@@ -505,8 +526,10 @@ loader.load('but.glb', (gltf) => {
     });
     scene.add(goal);
     console.log('Goal loaded');
+    updateLoadingProgress();
 }, undefined, (error) => {
     console.error('Erreur chargement but:', error);
+    updateLoadingProgress(); // Count even on error
 });
 
 // Load ball (ballon.glb) 1.5m to the right of the avatar
@@ -521,8 +544,10 @@ loader.load('ballon.glb', (gltf) => {
     });
     scene.add(ball);
     console.log('Ball loaded');
+    updateLoadingProgress();
 }, undefined, (error) => {
     console.error('Erreur chargement ballon:', error);
+    updateLoadingProgress(); // Count even on error
 });
 
 // Play animation once then return to idle
