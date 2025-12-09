@@ -25,7 +25,7 @@ Tes connaissances :
 - Durée : 2x20min en France, 2x25min en Europe
 - Compétitions : Championnat de France, Coupe de France, Jeux Paralympiques
 
-Parle de manière naturelle, enthousiaste et concise. Tu es passionné par ce sport !`;
+STYLE DE RÉPONSE : Fais des réponses COURTES et directes. Réponds à la question posée sans partir dans des monologues. Maximum 2-3 phrases par réponse. Parle de manière naturelle et enthousiaste. Tu es passionné par ce sport !`;
 
 // Voix disponibles
 const AVAILABLE_VOICES = ['echo', 'alloy', 'ash', 'ballad', 'coral', 'sage', 'shimmer', 'verse'];
