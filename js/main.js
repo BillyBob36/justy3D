@@ -495,6 +495,38 @@ loader.load(CONFIG.CHARACTER_MODEL, (gltf) => {
     console.error('Erreur chargement modèle:', error);
 });
 
+// Load goal (but.glb) at center of scene
+loader.load('but.glb', (gltf) => {
+    const goal = gltf.scene;
+    goal.position.set(0, 0, -8); // Behind the character
+    goal.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
+    scene.add(goal);
+    console.log('Goal loaded');
+}, undefined, (error) => {
+    console.error('Erreur chargement but:', error);
+});
+
+// Load ball (ballon.glb) 3m to the right of the avatar
+loader.load('ballon.glb', (gltf) => {
+    const ball = gltf.scene;
+    ball.position.set(3, 0, 0); // 3m to the right (positive X)
+    ball.traverse((child) => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
+    scene.add(ball);
+    console.log('Ball loaded');
+}, undefined, (error) => {
+    console.error('Erreur chargement ballon:', error);
+});
+
 // Play animation once then return to idle
 function playOneShotAnimation(animName, onComplete) {
     if (!animations[animName]) return;
