@@ -7,8 +7,8 @@ export const CONFIG = {
     
     // Character
     CHARACTER_MODEL: 'full-ceci.glb',
-    INTERACTION_DISTANCE: 2,
-    DETECTION_DISTANCE: 5,
+    INTERACTION_DISTANCE: 10,
+    DETECTION_DISTANCE: 12,
     TURN_ANGLE_THRESHOLD: 70,
     ROTATION_DURATION: 1.0,
     

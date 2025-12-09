@@ -13,10 +13,28 @@ let localStream = null;
 let isSpeaking = false;
 let inactivityTimeout = null;
 
-export function startChat() {
+export async function startChat() {
     document.getElementById('mainMenu').style.display = 'none';
     document.getElementById('chatContainer').classList.add('active');
     chatHistory = [];
+    
+    // Auto-start voice chat
+    const status = document.getElementById('voiceStatus');
+    if (status) status.textContent = 'Connexion...';
+    
+    try {
+        await startRealtimeSession();
+        isVoiceToVoiceActive = true;
+        if (status) status.textContent = '';
+        
+        // Pause background music
+        if (window.pauseMusicForVoiceChat) {
+            window.pauseMusicForVoiceChat();
+        }
+    } catch (error) {
+        console.error('V2V Error:', error);
+        if (status) status.textContent = '❌ ' + error.message;
+    }
 }
 
 export async function sendMessage() {
@@ -193,13 +211,11 @@ export function initChatListeners() {
 
 // Voice-to-Voice mode using OpenAI Realtime API with WebRTC
 export async function toggleVoiceToVoice() {
-    const btn = document.getElementById('voiceToVoiceBtn');
     const status = document.getElementById('voiceStatus');
     
     if (isVoiceToVoiceActive) {
         // Stop Voice-to-Voice
         stopVoiceToVoice();
-        btn.classList.remove('listening', 'speaking');
         if (status) status.textContent = '';
     } else {
         if (window.playSelectSound) window.playSelectSound();
@@ -209,7 +225,6 @@ export async function toggleVoiceToVoice() {
         try {
             await startRealtimeSession();
             isVoiceToVoiceActive = true;
-            btn.classList.add('listening');
             if (status) status.textContent = '';
             // Pause background music
             if (window.pauseMusicForVoiceChat) {
@@ -218,7 +233,6 @@ export async function toggleVoiceToVoice() {
         } catch (error) {
             console.error('V2V Error:', error);
             if (status) status.textContent = '❌ ' + error.message;
-            btn.classList.remove('listening', 'speaking');
         }
     }
 }
@@ -269,12 +283,6 @@ export function stopVoiceToVoice() {
         localStream = null;
     }
     
-    // Update button state
-    const btn = document.getElementById('voiceToVoiceBtn');
-    if (btn) {
-        btn.classList.remove('listening', 'speaking');
-    }
-    
     // Resume background music
     if (window.resumeMusicAfterVoiceChat) {
         window.resumeMusicAfterVoiceChat();
@@ -313,7 +321,6 @@ async function startRealtimeSession() {
     const audioEl = document.createElement('audio');
     audioEl.autoplay = true;
     
-    const btn = document.getElementById('voiceToVoiceBtn');
     let audioContext = null;
     let analyser = null;
     let audioCheckInterval = null;
@@ -367,8 +374,6 @@ async function startRealtimeSession() {
                     resetInactivityTimer();
                     if (!isSpeaking) {
                         isSpeaking = true;
-                        btn.classList.remove('listening');
-                        btn.classList.add('speaking');
                         // Start looping animation (only called once, loops internally)
                         if (window.playTalkLongAnimation) {
                             window.playTalkLongAnimation();
@@ -384,8 +389,6 @@ async function startRealtimeSession() {
                         if (window.stopTalkLongAnimation) {
                             window.stopTalkLongAnimation();
                         }
-                        btn.classList.remove('speaking');
-                        btn.classList.add('listening');
                     }
                 }
             }, 16); // ~60fps
@@ -399,6 +402,26 @@ async function startRealtimeSession() {
     
     // Step 6: Create data channel for events
     dataChannel = peerConnection.createDataChannel('oai-events');
+    
+    dataChannel.addEventListener('open', () => {
+        console.log('Data channel open - sending greeting trigger');
+        // Send a message to trigger AI greeting
+        dataChannel.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+                type: 'message',
+                role: 'user',
+                content: [{
+                    type: 'input_text',
+                    text: 'Bonjour !'
+                }]
+            }
+        }));
+        // Trigger response
+        dataChannel.send(JSON.stringify({
+            type: 'response.create'
+        }));
+    });
     
     dataChannel.addEventListener('message', (e) => {
         const event = JSON.parse(e.data);
@@ -418,7 +441,6 @@ async function startRealtimeSession() {
                 console.error('Realtime error:', event.error);
                 if (event.error?.code === 'session_expired') {
                     stopVoiceToVoice();
-                    btn.classList.remove('listening', 'speaking');
                     const status = document.getElementById('voiceStatus');
                     if (status) status.textContent = '⚠️ Session expirée';
                 }
