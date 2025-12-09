@@ -356,7 +356,13 @@ async function startRealtimeSession() {
     };
     
     // Reset inactivity timeout function (accessible from dataChannel events)
-    const resetInactivityTimer = () => {
+    const resetInactivityTimer = (fromUserActivity = false) => {
+        // If already warned and this is NOT from user activity, don't reset
+        // (prevents AI's warning speech from resetting the timer)
+        if (hasWarnedInactivity && !fromUserActivity) {
+            return;
+        }
+        
         // Clear existing timeouts
         if (inactivityWarningTimeout) {
             clearTimeout(inactivityWarningTimeout);
@@ -475,12 +481,12 @@ async function startRealtimeSession() {
         switch (event.type) {
             case 'input_audio_buffer.speech_started':
                 // User started speaking - reset inactivity timeout
-                resetInactivityTimer();
+                resetInactivityTimer(true); // true = user activity
                 break;
             case 'conversation.item.input_audio_transcription.completed':
                 // User speech transcribed - reset inactivity timeout
                 console.log('User said:', event.transcript);
-                resetInactivityTimer();
+                resetInactivityTimer(true); // true = user activity
                 break;
             case 'error':
                 console.error('Realtime error:', event.error);

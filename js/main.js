@@ -104,7 +104,7 @@ window.resumeMusicAfterVoiceChat = function() {
 };
 
 // Default voice for AI
-const DEFAULT_VOICE = 'echo';
+const DEFAULT_VOICE = 'verse';
 
 // Get selected voice (used by chat.js)
 window.getSelectedVoice = function() {
