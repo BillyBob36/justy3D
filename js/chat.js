@@ -13,7 +13,8 @@ let localStream = null;
 let isSpeaking = false;
 let inactivityTimeout = null;
 let inactivityWarningTimeout = null;
-let hasWarnedInactivity = false;
+let inactivityGoodbyeTimeout = null;
+let inactivityPhase = 0; // 0=normal, 1=warned, 2=goodbye said
 
 export async function startChat() {
     document.getElementById('mainMenu').style.display = 'none';
@@ -258,7 +259,13 @@ export function stopVoiceToVoice() {
         clearTimeout(inactivityWarningTimeout);
         inactivityWarningTimeout = null;
     }
-    hasWarnedInactivity = false;
+    
+    // Clear goodbye timeout
+    if (inactivityGoodbyeTimeout) {
+        clearTimeout(inactivityGoodbyeTimeout);
+        inactivityGoodbyeTimeout = null;
+    }
+    inactivityPhase = 0;
     
     // Stop talk animation only if we were speaking
     if (isSpeaking && window.stopTalkLongAnimation) {
@@ -355,11 +362,29 @@ async function startRealtimeSession() {
         }
     };
     
+    // Send goodbye message to AI (will be spoken)
+    const sendGoodbyeMessage = () => {
+        if (dataChannel && dataChannel.readyState === 'open') {
+            dataChannel.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: 'user',
+                    content: [{
+                        type: 'input_text',
+                        text: '[SYSTÈME] L\'utilisateur est toujours silencieux. Dis exactement: "Dans ce cas, à plus tard !"'
+                    }]
+                }
+            }));
+            dataChannel.send(JSON.stringify({ type: 'response.create' }));
+        }
+    };
+    
     // Reset inactivity timeout function (accessible from dataChannel events)
     const resetInactivityTimer = (fromUserActivity = false) => {
-        // If already warned and this is NOT from user activity, don't reset
-        // (prevents AI's warning speech from resetting the timer)
-        if (hasWarnedInactivity && !fromUserActivity) {
+        // If in warning/goodbye phase and this is NOT from user activity, don't reset
+        // (prevents AI's speech from resetting the timer)
+        if (inactivityPhase > 0 && !fromUserActivity) {
             return;
         }
         
@@ -368,27 +393,38 @@ async function startRealtimeSession() {
             clearTimeout(inactivityWarningTimeout);
             inactivityWarningTimeout = null;
         }
+        if (inactivityGoodbyeTimeout) {
+            clearTimeout(inactivityGoodbyeTimeout);
+            inactivityGoodbyeTimeout = null;
+        }
         if (inactivityTimeout) {
             clearTimeout(inactivityTimeout);
             inactivityTimeout = null;
         }
-        hasWarnedInactivity = false;
+        inactivityPhase = 0;
         
-        // Set warning timeout (10s)
+        // Phase 1: Warning after 10s
         inactivityWarningTimeout = setTimeout(() => {
-            console.log('Voice chat inactivity warning');
-            hasWarnedInactivity = true;
+            console.log('Voice chat inactivity warning (phase 1)');
+            inactivityPhase = 1;
             sendInactivityWarning();
             
-            // Set final timeout (5s after warning)
-            inactivityTimeout = setTimeout(() => {
-                console.log('Voice chat inactivity timeout - closing');
-                stopVoiceToVoice();
-                // Return to menu
-                if (window.backToMenu) {
-                    window.backToMenu();
-                }
-            }, 5000);
+            // Phase 2: Goodbye after 10s more
+            inactivityGoodbyeTimeout = setTimeout(() => {
+                console.log('Voice chat goodbye (phase 2)');
+                inactivityPhase = 2;
+                sendGoodbyeMessage();
+                
+                // Phase 3: Silent close after 5s more
+                inactivityTimeout = setTimeout(() => {
+                    console.log('Voice chat inactivity timeout - closing silently');
+                    stopVoiceToVoice();
+                    // Return to menu
+                    if (window.backToMenu) {
+                        window.backToMenu();
+                    }
+                }, 5000);
+            }, 10000);
         }, CONFIG.VOICE_INACTIVITY_WARNING);
     };
     
@@ -464,7 +500,7 @@ async function startRealtimeSession() {
                 role: 'user',
                 content: [{
                     type: 'input_text',
-                    text: '[SYSTÈME] La conversation vient de commencer. Dis exactement cette phrase pour accueillir l\'utilisateur: "Content de parler avec toi ! Pose-moi toutes les questions que tu veux sur le cécifoot, je t\'écoute."'
+                    text: '[SYSTÈME] La conversation vient de commencer. Dis exactement cette phrase pour accueillir l\'utilisateur: "Content de parler cécifoot avec toi ! Exprime-toi simplement de vive voix naturellement et je te répondrai."'
                 }]
             }
         }));
