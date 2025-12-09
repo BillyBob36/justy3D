@@ -232,7 +232,6 @@ function selectAnswer(btn, isCorrect) {
     // Clear selection to show correct/wrong colors
     clearSelection();
     
-    const dots = document.querySelectorAll('.quiz-dot');
     const allBtns = document.querySelectorAll('.quiz-answer');
     
     allBtns.forEach(b => {
@@ -247,8 +246,6 @@ function selectAnswer(btn, isCorrect) {
     
     if (isCorrect) {
         btn.classList.add('correct');
-        dots[currentQuestionIndex].classList.remove('current');
-        dots[currentQuestionIndex].classList.add('correct');
         answersHistory[currentQuestionIndex] = 'correct';
         score++;
         
@@ -261,8 +258,6 @@ function selectAnswer(btn, isCorrect) {
         }
     } else {
         btn.classList.add('wrong');
-        dots[currentQuestionIndex].classList.remove('current');
-        dots[currentQuestionIndex].classList.add('wrong');
         answersHistory[currentQuestionIndex] = 'wrong';
         
         // Play wrong sound after 500ms

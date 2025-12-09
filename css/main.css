@@ -56,17 +56,21 @@ canvas {
 @media (pointer: coarse) {
     .desktop-instructions,
     .desktop-hint {
-        display: none;
+        display: none !important;
     }
     .mobile-instructions,
     .mobile-hint {
-        display: block;
+        display: inline !important;
     }
 }
 
 /* Hide mobile hint on desktop */
 .mobile-hint {
     display: none;
+}
+
+.desktop-hint {
+    display: inline;
 }
 
 /* Crosshair */
@@ -364,10 +368,6 @@ input:checked + .toggle-slider:before {
     .interaction-hint {
         pointer-events: auto;
         cursor: pointer;
-    }
-    .interaction-hint.visible {
-        background: rgba(0, 200, 100, 0.8);
-        border-color: rgba(255, 255, 255, 0.6);
     }
     .interaction-hint.visible:active {
         transform: translateX(-50%) scale(0.95);
