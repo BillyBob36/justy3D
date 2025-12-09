@@ -1,7 +1,9 @@
 // Configuration
 export const CONFIG = {
-    // OpenAI API key is now stored in localStorage (user settings)
-    // Users enter their own key via the settings menu (gear icon)
+    // Backend server URL for API proxy (keeps API key secure)
+    BACKEND_URL: 'https://justy3d-api.onrender.com',
+    
+    // Fallback: users can still enter their own key via settings menu
     
     // Character
     CHARACTER_MODEL: 'full-ceci.glb',

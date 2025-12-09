@@ -202,19 +202,12 @@ export async function toggleVoiceToVoice() {
         btn.classList.remove('listening', 'speaking');
         if (status) status.textContent = '';
     } else {
-        // Check API key
-        const apiKey = window.getApiKey ? window.getApiKey() : '';
-        if (!apiKey) {
-            if (status) status.textContent = '⚠️ Clé API manquante ! Clique sur ⚙️';
-            return;
-        }
-        
         if (window.playSelectSound) window.playSelectSound();
         if (status) status.textContent = 'Connexion...';
         
         // Start Voice-to-Voice with WebRTC
         try {
-            await startRealtimeSession(apiKey);
+            await startRealtimeSession();
             isVoiceToVoiceActive = true;
             btn.classList.add('listening');
             if (status) status.textContent = '';
@@ -288,34 +281,50 @@ export function stopVoiceToVoice() {
     }
 }
 
-async function startRealtimeSession(apiKey) {
-    // Step 1: Get ephemeral key from OpenAI
-    const sessionResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'gpt-4o-realtime-preview-2024-12-17',
-            voice: 'echo', // Male voice: echo, alloy, ash, ballad, coral, sage, shimmer, verse
-            instructions: CONFIG.VOICE_SYSTEM_PROMPT,
-            input_audio_transcription: {
-                model: 'whisper-1'
+async function startRealtimeSession() {
+    // Step 1: Get ephemeral key from backend server (keeps API key secure)
+    let ephemeralKey;
+    
+    // Try backend first, fallback to user's API key if backend fails
+    try {
+        const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/realtime-token`);
+        if (backendResponse.ok) {
+            const data = await backendResponse.json();
+            ephemeralKey = data.client_secret.value;
+        } else {
+            throw new Error('Backend unavailable');
+        }
+    } catch (backendError) {
+        console.warn('Backend unavailable, trying user API key...');
+        // Fallback: use user's API key from settings
+        const apiKey = window.getApiKey ? window.getApiKey() : '';
+        if (!apiKey) {
+            throw new Error('Serveur indisponible. Entrez une clé API dans ⚙️ Paramètres.');
+        }
+        
+        const sessionResponse = await fetch('https://api.openai.com/v1/realtime/sessions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
             },
-            turn_detection: {
-                type: 'server_vad'
-            }
-        })
-    });
-    
-    if (!sessionResponse.ok) {
-        const error = await sessionResponse.json();
-        throw new Error(error.error?.message || 'Erreur lors de la création de session');
+            body: JSON.stringify({
+                model: 'gpt-4o-realtime-preview-2024-12-17',
+                voice: 'echo',
+                instructions: CONFIG.VOICE_SYSTEM_PROMPT,
+                input_audio_transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad' }
+            })
+        });
+        
+        if (!sessionResponse.ok) {
+            const error = await sessionResponse.json();
+            throw new Error(error.error?.message || 'Erreur lors de la création de session');
+        }
+        
+        const sessionData = await sessionResponse.json();
+        ephemeralKey = sessionData.client_secret.value;
     }
-    
-    const sessionData = await sessionResponse.json();
-    const ephemeralKey = sessionData.client_secret.value;
     
     // Step 2: Get microphone access
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
