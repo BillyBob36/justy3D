@@ -15,13 +15,13 @@
         <div id="instructions">
             <h1>Touche pour jouer</h1>
             <p class="desktop-instructions">Flèches directionnelles pour se déplacer<br>ZQSD pour les déplacements latéraux<br>Espace/Entrée pour interagir</p>
-            <p class="mobile-instructions">Joystick pour se déplacer<br>Bouton 💬 pour interagir</p>
+            <p class="mobile-instructions">Joystick pour se déplacer<br>Approche-toi pour interagir</p>
         </div>
     </div>
     <div id="crosshair"></div>
-    <div id="interactionHint" class="interaction-hint">
+    <div id="interactionHint" class="interaction-hint" onclick="window.mobileInteract && window.mobileInteract()">
         <span class="desktop-hint">Appuie sur Entrée pour parler</span>
-        <span class="mobile-hint">Appuie sur 💬 pour parler</span>
+        <span class="mobile-hint">Interagir</span>
     </div>
     
     <!-- Mobile Controls -->
@@ -31,9 +31,6 @@
                 <div id="joystickKnob" class="joystick-knob"></div>
             </div>
         </div>
-        <button id="mobileInteractBtn" class="mobile-interact-btn">
-            <span>💬</span>
-        </button>
     </div>
 
     <!-- Settings Button & Menu -->

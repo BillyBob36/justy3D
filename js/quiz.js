@@ -33,20 +33,16 @@ function updateLiveScore() {
 
 function renderQuizProgress() {
     const container = document.getElementById('quizProgress');
-    container.innerHTML = '';
-    for (let i = 0; i < CONFIG.QUESTIONS_PER_QUIZ; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'quiz-dot';
-        dot.textContent = i + 1;
-        if (i === currentQuestionIndex) {
-            dot.classList.add('current');
-        } else if (answersHistory[i] === 'correct') {
-            dot.classList.add('correct');
-        } else if (answersHistory[i] === 'wrong') {
-            dot.classList.add('wrong');
-        }
-        container.appendChild(dot);
-    }
+    const questionNum = currentQuestionIndex + 1;
+    const total = CONFIG.QUESTIONS_PER_QUIZ;
+    const progressPercent = (currentQuestionIndex / total) * 100;
+    
+    container.innerHTML = `
+        <span class="quiz-question-number">Question ${questionNum}/${total}</span>
+        <div class="quiz-progress-bar">
+            <div class="quiz-progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+    `;
 }
 
 function renderQuestion() {

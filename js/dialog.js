@@ -201,6 +201,11 @@ function openDialog() {
     // Enter dialog camera mode
     isDialogMode = true;
     
+    // Hide mobile controls
+    if (window.updateMobileControlsVisibility) {
+        window.updateMobileControlsVisibility();
+    }
+    
     // Start camera transition to dialog position
     if (character) {
         const charPos = character.position.clone();
@@ -245,6 +250,11 @@ function closeDialog() {
     
     // Exit dialog camera mode
     isDialogMode = false;
+    
+    // Show mobile controls
+    if (window.updateMobileControlsVisibility) {
+        window.updateMobileControlsVisibility();
+    }
     
     // Start transition back to FPS position
     if (savedCameraPosition && savedCameraQuaternion) {

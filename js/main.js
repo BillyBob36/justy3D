@@ -347,9 +347,8 @@ function initMobileControls() {
     const joystickZone = document.getElementById('joystickZone');
     const joystickBase = document.getElementById('joystickBase');
     const joystickKnob = document.getElementById('joystickKnob');
-    const mobileInteractBtn = document.getElementById('mobileInteractBtn');
     
-    if (!joystickZone || !mobileInteractBtn) return;
+    if (!joystickZone) return;
     
     // Joystick touch handling
     let joystickTouchId = null;
@@ -417,26 +416,26 @@ function initMobileControls() {
         joystickData.y = -deltaY / maxDistance; // Invert Y (up is positive)
     }
     
-    // Mobile interact button
-    mobileInteractBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (gameStarted && !isInDialogMode()) {
-            simulateClick();
-        }
-    }, { passive: false });
 }
 
-// Update mobile interact button state
-function updateMobileInteractButton(canInteract) {
-    const btn = document.getElementById('mobileInteractBtn');
-    if (btn) {
-        if (canInteract) {
-            btn.classList.add('active');
+// Mobile interact function (called from hint click)
+window.mobileInteract = function() {
+    if (gameStarted && !isInDialogMode()) {
+        simulateClick();
+    }
+};
+
+// Show/hide mobile controls based on dialog state
+window.updateMobileControlsVisibility = function() {
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) {
+        if (isInDialogMode()) {
+            mobileControls.classList.add('hidden');
         } else {
-            btn.classList.remove('active');
+            mobileControls.classList.remove('hidden');
         }
     }
-}
+};
 
 // Initialize mobile controls when DOM is ready
 document.addEventListener('DOMContentLoaded', initMobileControls);
@@ -823,8 +822,6 @@ function animate() {
         } else {
             interactionHint.classList.remove('visible');
         }
-        // Update mobile interact button
-        updateMobileInteractButton(canInteract);
         
         if (distance < CONFIG.DETECTION_DISTANCE) {
             // Direction from character to player

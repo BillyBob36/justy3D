@@ -317,6 +317,12 @@ input:checked + .toggle-slider:before {
     height: 200px;
     pointer-events: none;
     z-index: 60;
+    transition: opacity 0.3s;
+}
+
+.mobile-controls.hidden {
+    opacity: 0;
+    pointer-events: none !important;
 }
 
 .joystick-zone {
@@ -353,39 +359,19 @@ input:checked + .toggle-slider:before {
     transition: none;
 }
 
-.mobile-interact-btn {
-    position: absolute;
-    right: 20px;
-    bottom: 30px;
-    width: 80px;
-    height: 80px;
-    background: rgba(0, 136, 255, 0.6);
-    border: 3px solid rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    cursor: pointer;
-    pointer-events: auto;
-    font-size: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    opacity: 0.5;
-}
-
-.mobile-interact-btn.active {
-    opacity: 1;
-    background: rgba(0, 200, 100, 0.7);
-    transform: scale(1.1);
-    animation: interactPulse 1s ease-in-out infinite;
-}
-
-.mobile-interact-btn:active {
-    transform: scale(0.95);
-}
-
-@keyframes interactPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 200, 100, 0.5); }
-    50% { box-shadow: 0 0 0 15px rgba(0, 200, 100, 0); }
+/* Mobile interaction hint - clickable */
+@media (pointer: coarse) {
+    .interaction-hint {
+        pointer-events: auto;
+        cursor: pointer;
+    }
+    .interaction-hint.visible {
+        background: rgba(0, 200, 100, 0.8);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+    .interaction-hint.visible:active {
+        transform: translateX(-50%) scale(0.95);
+    }
 }
 
 /* Mobile Responsive */
