@@ -249,6 +249,9 @@ function updateLoadingProgress() {
     }
 }
 
+// Track when interactions are allowed (1s after game start)
+let canInteract = false;
+
 // Start game function
 function startGame() {
     if (!gameStarted && blocker.classList.contains('ready')) {
@@ -260,6 +263,10 @@ function startGame() {
         document.getElementById('settingsBtn').classList.add('visible');
         setTimeout(() => {
             blocker.style.display = 'none';
+        }, 1000);
+        // Allow interactions after 1s delay
+        setTimeout(() => {
+            canInteract = true;
         }, 1000);
     }
 }
@@ -667,7 +674,7 @@ window.stopTalkLongAnimation = stopTalkLongAnimation;
 // Function to handle interaction (used by space, enter, click)
 // Uses same logic as hint visibility (distance + looking direction)
 function handleInteraction() {
-    if (!gameStarted || !character) return;
+    if (!gameStarted || !character || !canInteract) return;
     
     const playerPos = camera.position.clone();
     playerPos.y = 0;
@@ -683,7 +690,7 @@ function handleInteraction() {
     
     const dirToChar = new THREE.Vector3().subVectors(charPos, playerPos).normalize();
     const lookDot = cameraForward.dot(dirToChar);
-    const isLookingAtChar = lookDot > 0.5; // ~60° cone
+    const isLookingAtChar = lookDot > 0.75; // ~40° cone
     
     // Can interact if close enough AND looking at character
     if (distance < CONFIG.INTERACTION_DISTANCE && isLookingAtChar) {
@@ -731,7 +738,7 @@ function animate() {
         let rotationInput = 0;
         if (keys.rotateLeft) rotationInput += 1;
         if (keys.rotateRight) rotationInput -= 1;
-        if (joystickActive) rotationInput -= joystickData.x * 0.8; // Joystick X for rotation
+        if (joystickActive) rotationInput -= joystickData.x * 0.4; // Joystick X for rotation (reduced for mobile)
         
         playerRotation += rotationInput * ROTATION_SPEED * delta;
         
@@ -859,7 +866,7 @@ function animate() {
         
         const dirToChar = new THREE.Vector3().subVectors(charPos, playerPos).normalize();
         const lookDot = cameraForward.dot(dirToChar);
-        const isLookingAtChar = lookDot > 0.5; // ~60° cone of vision
+        const isLookingAtChar = lookDot > 0.75; // ~40° cone of vision
         
         // Show/hide interaction hint based on distance AND looking direction
         const interactionHint = document.getElementById('interactionHint');
