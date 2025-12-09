@@ -225,12 +225,14 @@ scene.add(ground);
 // Game state
 let gameStarted = false;
 let assetsLoaded = 0;
-const TOTAL_ASSETS = 3; // character, goal, ball
+const TOTAL_ASSETS = 1; // character only
 
 const blocker = document.getElementById('blocker');
 const loadingProgress = document.getElementById('loadingProgress');
 const loadingBar = document.getElementById('loadingBar');
 const startTitle = document.getElementById('startTitle');
+
+const startHint = document.getElementById('startHint');
 
 // Update loading progress
 function updateLoadingProgress() {
@@ -241,13 +243,14 @@ function updateLoadingProgress() {
     if (assetsLoaded >= TOTAL_ASSETS) {
         // All assets loaded - ready to start
         blocker.classList.add('ready');
-        startTitle.textContent = 'Touche pour jouer';
+        startTitle.textContent = 'Bienvenue';
         loadingBar.classList.add('hidden');
+        startHint.classList.add('visible');
     }
 }
 
-// Start game on click (only if ready)
-blocker.addEventListener('click', () => {
+// Start game function
+function startGame() {
     if (!gameStarted && blocker.classList.contains('ready')) {
         gameStarted = true;
         startMusic();
@@ -258,6 +261,16 @@ blocker.addEventListener('click', () => {
         setTimeout(() => {
             blocker.style.display = 'none';
         }, 1000);
+    }
+}
+
+// Start game on click (only if ready)
+blocker.addEventListener('click', startGame);
+
+// Start game on Enter key (only if ready and not yet started)
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Enter' && !gameStarted && blocker.classList.contains('ready')) {
+        startGame();
     }
 });
 
@@ -514,41 +527,6 @@ loader.load(CONFIG.CHARACTER_MODEL, (gltf) => {
     updateLoadingProgress(); // Count even on error
 });
 
-// Load goal (but.glb) at center of scene
-loader.load('but.glb', (gltf) => {
-    const goal = gltf.scene;
-    goal.position.set(0, 0, 0); // Center of scene
-    goal.traverse((child) => {
-        if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-        }
-    });
-    scene.add(goal);
-    console.log('Goal loaded');
-    updateLoadingProgress();
-}, undefined, (error) => {
-    console.error('Erreur chargement but:', error);
-    updateLoadingProgress(); // Count even on error
-});
-
-// Load ball (ballon.glb) 1.5m to the right of the avatar
-loader.load('ballon.glb', (gltf) => {
-    const ball = gltf.scene;
-    ball.position.set(1.5, 0, 0); // 1.5m to the right (positive X)
-    ball.traverse((child) => {
-        if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-        }
-    });
-    scene.add(ball);
-    console.log('Ball loaded');
-    updateLoadingProgress();
-}, undefined, (error) => {
-    console.error('Erreur chargement ballon:', error);
-    updateLoadingProgress(); // Count even on error
-});
 
 // Play animation once then return to idle
 function playOneShotAnimation(animName, onComplete) {

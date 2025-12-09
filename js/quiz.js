@@ -35,13 +35,9 @@ function renderQuizProgress() {
     const container = document.getElementById('quizProgress');
     const questionNum = currentQuestionIndex + 1;
     const total = CONFIG.QUESTIONS_PER_QUIZ;
-    const progressPercent = (currentQuestionIndex / total) * 100;
     
     container.innerHTML = `
         <span class="quiz-question-number">Question ${questionNum}/${total}</span>
-        <div class="quiz-progress-bar">
-            <div class="quiz-progress-fill" style="width: ${progressPercent}%"></div>
-        </div>
     `;
 }
 
