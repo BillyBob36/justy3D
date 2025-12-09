@@ -500,7 +500,7 @@ async function startRealtimeSession() {
                 role: 'user',
                 content: [{
                     type: 'input_text',
-                    text: '[SYSTÈME] La conversation vient de commencer. Dis exactement cette phrase pour accueillir l\'utilisateur: "Content de parler cécifoot avec toi ! Exprime-toi simplement de vive voix naturellement et je te répondrai."'
+                    text: '[SYSTÈME] La conversation vient de commencer. Dis exactement cette phrase pour accueillir l\'utilisateur: "Content de parler cécifoot avec toi ! Exprime-toi naturellement de vive voix. Je te répondrai."'
                 }]
             }
         }));
