@@ -12,6 +12,8 @@ let dataChannel = null;
 let localStream = null;
 let isSpeaking = false;
 let inactivityTimeout = null;
+let inactivityWarningTimeout = null;
+let hasWarnedInactivity = false;
 
 export async function startChat() {
     document.getElementById('mainMenu').style.display = 'none';
@@ -251,6 +253,13 @@ export function stopVoiceToVoice() {
         inactivityTimeout = null;
     }
     
+    // Clear warning timeout
+    if (inactivityWarningTimeout) {
+        clearTimeout(inactivityWarningTimeout);
+        inactivityWarningTimeout = null;
+    }
+    hasWarnedInactivity = false;
+    
     // Stop talk animation only if we were speaking
     if (isSpeaking && window.stopTalkLongAnimation) {
         window.stopTalkLongAnimation();
@@ -328,17 +337,53 @@ async function startRealtimeSession() {
     const SILENCE_THRESHOLD = 0.01;
     const SILENCE_FRAMES_TO_STOP = 30; // ~0.5 seconds of silence
     
+    // Send warning message to AI (will be spoken)
+    const sendInactivityWarning = () => {
+        if (dataChannel && dataChannel.readyState === 'open') {
+            dataChannel.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: {
+                    type: 'message',
+                    role: 'user',
+                    content: [{
+                        type: 'input_text',
+                        text: '[SYSTÈME] L\'utilisateur est silencieux. Dis-lui gentiment: "Tu es encore là ? Si tu n\'as plus de questions, je vais bientôt te laisser."'
+                    }]
+                }
+            }));
+            dataChannel.send(JSON.stringify({ type: 'response.create' }));
+        }
+    };
+    
     // Reset inactivity timeout function (accessible from dataChannel events)
     const resetInactivityTimer = () => {
+        // Clear existing timeouts
+        if (inactivityWarningTimeout) {
+            clearTimeout(inactivityWarningTimeout);
+            inactivityWarningTimeout = null;
+        }
         if (inactivityTimeout) {
             clearTimeout(inactivityTimeout);
+            inactivityTimeout = null;
         }
-        inactivityTimeout = setTimeout(() => {
-            console.log('Voice chat inactivity timeout - closing');
-            const status = document.getElementById('voiceStatus');
-            if (status) status.textContent = 'Session terminée (inactivité)';
-            stopVoiceToVoice();
-        }, CONFIG.VOICE_INACTIVITY_TIMEOUT);
+        hasWarnedInactivity = false;
+        
+        // Set warning timeout (10s)
+        inactivityWarningTimeout = setTimeout(() => {
+            console.log('Voice chat inactivity warning');
+            hasWarnedInactivity = true;
+            sendInactivityWarning();
+            
+            // Set final timeout (5s after warning)
+            inactivityTimeout = setTimeout(() => {
+                console.log('Voice chat inactivity timeout - closing');
+                stopVoiceToVoice();
+                // Return to menu
+                if (window.backToMenu) {
+                    window.backToMenu();
+                }
+            }, 5000);
+        }, CONFIG.VOICE_INACTIVITY_WARNING);
     };
     
     // Start initial inactivity timeout
@@ -413,7 +458,7 @@ async function startRealtimeSession() {
                 role: 'user',
                 content: [{
                     type: 'input_text',
-                    text: 'Bonjour !'
+                    text: '[SYSTÈME] La conversation vient de commencer. Dis exactement cette phrase pour accueillir l\'utilisateur: "Content de parler avec toi ! Pose-moi toutes les questions que tu veux sur le cécifoot, je t\'écoute."'
                 }]
             }
         }));

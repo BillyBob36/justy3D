@@ -281,6 +281,9 @@ function backToMenu() {
     document.getElementById('chatContainer').classList.remove('active');
 }
 
+// Expose backToMenu globally for chat.js
+window.backToMenu = backToMenu;
+
 // Ease out cubic function for smooth transition
 function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);

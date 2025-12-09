@@ -62,5 +62,6 @@ Tes connaissances :
 Parle de manière naturelle, enthousiaste et concise. Tu es passionné par ce sport !`,
 
     // Voice chat inactivity timeout (ms)
-    VOICE_INACTIVITY_TIMEOUT: 5000
+    VOICE_INACTIVITY_WARNING: 10000,  // 10s before warning
+    VOICE_INACTIVITY_TIMEOUT: 15000   // 15s total before disconnect
 };
