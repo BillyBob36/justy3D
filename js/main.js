@@ -496,7 +496,7 @@ loader.load(CONFIG.CHARACTER_MODEL, (gltf) => {
 // Load goal (but.glb) at center of scene
 loader.load('but.glb', (gltf) => {
     const goal = gltf.scene;
-    goal.position.set(0, 0, -8); // Behind the character
+    goal.position.set(0, 0, 0); // Center of scene
     goal.traverse((child) => {
         if (child.isMesh) {
             child.castShadow = true;
@@ -509,10 +509,10 @@ loader.load('but.glb', (gltf) => {
     console.error('Erreur chargement but:', error);
 });
 
-// Load ball (ballon.glb) 3m to the right of the avatar
+// Load ball (ballon.glb) 1.5m to the right of the avatar
 loader.load('ballon.glb', (gltf) => {
     const ball = gltf.scene;
-    ball.position.set(3, 0, 0); // 3m to the right (positive X)
+    ball.position.set(1.5, 0, 0); // 1.5m to the right (positive X)
     ball.traverse((child) => {
         if (child.isMesh) {
             child.castShadow = true;
